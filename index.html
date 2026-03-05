@@ -1562,33 +1562,10 @@ function submitGate() {
   emailInput.classList.remove('error');
   errorEl.style.display = 'none';
 
-  // ── REPLACE THIS URL WITH YOUR BEEHIIV SUBSCRIBE API ENDPOINT ──
-  // Your Beehiiv publication ID is in Settings > Publication > API
-  // Endpoint format: https://api.beehiiv.com/v2/publications/YOUR_PUB_ID/subscriptions
-  // For now we log and proceed — wire up the fetch() call below when ready
-  const BEEHIIV_PUB_ID = 'YOUR_PUBLICATION_ID'; // ← swap this
-  const BEEHIIV_API_KEY = 'YOUR_API_KEY';        // ← swap this (keep server-side in prod)
+  // ── Beehiiv magic link subscription ──
+  const subscribeUrl = `https://magic.beehiiv.com/v1/fcd403e4-731d-448d-b3c6-4ae5b6c1c552?email=${encodeURIComponent(email)}`;
+  fetch(subscribeUrl, { method: 'GET', mode: 'no-cors' }).catch(() => {});
 
-  /* UNCOMMENT TO GO LIVE — requires CORS proxy or server function:
-  fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUB_ID}/subscriptions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${BEEHIIV_API_KEY}`
-    },
-    body: JSON.stringify({
-      email: email,
-      first_name: name || undefined,
-      reactivate_existing: false,
-      send_welcome_email: true,
-      utm_source: 'future-shock-test',
-      utm_medium: 'quiz',
-      utm_campaign: 'future-shock-2025'
-    })
-  }).catch(err => console.log('Beehiiv subscribe error:', err));
-  */
-
-  console.log('Subscribe:', { name, email }); // remove in prod
   closeGateAndReveal();
 }
 
