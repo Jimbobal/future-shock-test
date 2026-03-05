@@ -1562,13 +1562,18 @@ function submitGate() {
   emailInput.classList.remove('error');
   errorEl.style.display = 'none';
 
-  // ── Beehiiv magic link subscription (hidden iframe to trigger redirect-based sub) ──
+  // ── Beehiiv magic link subscription ──
   const subscribeUrl = `https://magic.beehiiv.com/v1/fcd403e4-731d-448d-b3c6-4ae5b6c1c552?email=${encodeURIComponent(email)}`;
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = subscribeUrl;
-  document.body.appendChild(iframe);
-  setTimeout(() => iframe.remove(), 5000);
+
+  // Open magic link in a tiny popup window — most reliable method
+  const popup = window.open(subscribeUrl, '_blank', 'width=1,height=1,left=-1000,top=-1000');
+  if (popup) {
+    setTimeout(() => { try { popup.close(); } catch(e) {} }, 3000);
+  } else {
+    // Popup blocked — fall back to image pixel GET request
+    const img = new Image();
+    img.src = subscribeUrl;
+  }
 
   closeGateAndReveal();
 }
