@@ -1547,6 +1547,23 @@ function openGate() {
   document.getElementById('gateOverlay').classList.add('active');
 }
 
+// ── Determine profile from answers (mirrors showResults logic) ──
+function getProfile() {
+  const agree = Object.values(answers).filter(v => v === 'agree').length;
+  const disagree = Object.values(answers).filter(v => v === 'disagree').length;
+  const unsure = Object.values(answers).filter(v => v === 'unsure').length;
+  let profile;
+  if (agree >= 13) profile = 'The Accelerationist';
+  else if (disagree >= 13) profile = 'The Sceptic';
+  else if (unsure >= 8) profile = 'The Realist';
+  else if (agree >= 10 && answers.q16 === 'disagree') profile = 'The Optimistic Denialist';
+  else if (agree >= 9 && answers.q15 === 'disagree') profile = 'The Frustrated Insider';
+  else if (disagree >= 7 && answers.q9 === 'agree') profile = 'The Craft Defender';
+  else if (agree >= 8) profile = 'The Pragmatic Adopter';
+  else profile = 'The Measured Observer';
+  return { profile, agree, disagree, unsure };
+}
+
 function submitGate() {
   const email = document.getElementById('gateEmail').value.trim();
   const name = document.getElementById('gateName').value.trim();
@@ -1565,6 +1582,15 @@ function submitGate() {
   // ── Beehiiv magic link — opens in new tab so user can confirm subscription ──
   const subscribeUrl = `https://magic.beehiiv.com/v1/fcd403e4-731d-448d-b3c6-4ae5b6c1c552?email=${encodeURIComponent(email)}`;
   window.open(subscribeUrl, '_blank');
+
+  // ── Send quiz data to Notion via Cloudflare Worker ──
+  const { profile, agree, disagree, unsure } = getProfile();
+  const WORKER_URL = 'https://quiz-relay.jamesgarner1976.workers.dev';
+  fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, answers, profile, agree, disagree, unsure })
+  }).catch(() => {});
 
   closeGateAndReveal();
 }
