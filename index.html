@@ -1032,7 +1032,7 @@
       <div class="gate-error" id="gateError">Please enter a valid email address.</div>
       <button class="gate-submit" onclick="submitGate()">Unlock My Profile →</button>
     </div>
-    <button class="gate-skip" onclick="skipGate()">Skip — just show me the results</button>
+    <!-- email required to see results -->
     <div class="gate-privacy">
       By subscribing you agree to receive Project Flux emails.<br>
       Your data is never sold or shared. Powered by Beehiiv.
@@ -1617,7 +1617,8 @@ function renderAllProfiles(currentProfile) {
 }
 
 // ── MAIN QUIZ LOGIC ────────────────────────────────────────────────
-
+const answers = {};
+const total = 18;
 
 function answer(qId, value, btn) {
   const card = document.getElementById(qId);
