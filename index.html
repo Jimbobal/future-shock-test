@@ -1563,17 +1563,23 @@ function submitGate() {
   errorEl.style.display = 'none';
 
   // ── Beehiiv magic link subscription ──
+  // Use a hidden form targeting a hidden iframe — triggers a real browser
+  // navigation to the magic link without leaving the page or needing popups.
   const subscribeUrl = `https://magic.beehiiv.com/v1/fcd403e4-731d-448d-b3c6-4ae5b6c1c552?email=${encodeURIComponent(email)}`;
-
-  // Open magic link in a tiny popup window — most reliable method
-  const popup = window.open(subscribeUrl, '_blank', 'width=1,height=1,left=-1000,top=-1000');
-  if (popup) {
-    setTimeout(() => { try { popup.close(); } catch(e) {} }, 3000);
-  } else {
-    // Popup blocked — fall back to image pixel GET request
-    const img = new Image();
-    img.src = subscribeUrl;
-  }
+  const frameName = 'beehiiv_frame_' + Date.now();
+  const frame = document.createElement('iframe');
+  frame.name = frameName;
+  frame.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+  frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+  document.body.appendChild(frame);
+  const form = document.createElement('form');
+  form.method = 'GET';
+  form.action = subscribeUrl;
+  form.target = frameName;
+  form.style.display = 'none';
+  document.body.appendChild(form);
+  form.submit();
+  setTimeout(() => { frame.remove(); form.remove(); }, 6000);
 
   closeGateAndReveal();
 }
