@@ -391,6 +391,7 @@
     position: absolute;
     inset: 0;
     background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,69,48,0.06) 0%, transparent 70%);
+    pointer-events: none;
   }
 
   .cta-zone p {
@@ -412,6 +413,7 @@
     cursor: pointer;
     transition: all 0.3s;
     position: relative;
+    z-index: 2;
   }
 
   .btn-submit:hover {
@@ -1633,7 +1635,12 @@ function answer(qId, value, btn) {
   document.getElementById('progressBar').style.width = ((count / total) * 100) + '%';
 
   const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = count < total;
+  if (count >= total) {
+    submitBtn.disabled = false;
+    submitBtn.removeAttribute('disabled');
+  } else {
+    submitBtn.disabled = true;
+  }
 }
 
 function showResults() {
