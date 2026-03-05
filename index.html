@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Future Shock Test — Project Delivery Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #0d1117;
+    --border: #1a2030;
+    --accent: #ff4530;
+    --accent2: #00e5ff;
+    --accent3: #ffd600;
+    --text: #e8eaf0;
+    --text-muted: #5a6070;
+    --text-dim: #8a9090;
+    --agree: #00e5ff;
+    --disagree: #ff4530;
+    --unsure: #ffd600;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* SCAN LINE */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -100%;
+    left: 0;
+    right: 0;
+    height: 200%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,229,255,0.015) 2px,
+      rgba(0,229,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+    animation: scanlines 8s linear infinite;
+  }
+
+  @keyframes scanlines { to { transform: translateY(50%); } }
+
+  /* HEADER */
+  .header {
+    position: relative;
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .header-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 40% at 80% 50%, rgba(255,69,48,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 50%, rgba(0,229,255,0.05) 0%, transparent 70%);
+  }
+
+  .year-ticker {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+
+  .year-ticker span {
+    animation: blink 1.2s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 110px);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    position: relative;
+  }
+
+  .header h1 .line1 { color: var(--text); }
+  .header h1 .line2 { 
+    color: var(--accent); 
+    -webkit-text-stroke: 1px var(--accent);
+  }
+  .header h1 .line3 { 
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.15);
+  }
+
+  .header-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 20px;
+    max-width: 560px;
+    line-height: 1.7;
+    letter-spacing: 0.05em;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    text-transform: uppercase;
+  }
+
+  .meta-pill.active {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  /* PROGRESS */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.4s ease;
+    z-index: 100;
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px 120px;
+  }
+
+  /* INTRO */
+  .intro {
+    padding: 56px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+
+  .intro-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .intro p {
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--text-dim);
+    max-width: 640px;
+  }
+
+  .intro p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* SECTION DIVIDERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    margin-top: 56px;
+  }
+
+  .section-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--border);
+    flex-shrink: 0;
+  }
+
+  .section-label {
+    border-top: 1px solid var(--border);
+    flex: 1;
+    padding-top: 12px;
+  }
+
+  .section-label h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .section-label p {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    position: relative;
+    transition: border-color 0.3s;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .question-card.answered-agree::before { background: var(--agree); }
+  .question-card.answered-disagree::before { background: var(--disagree); }
+  .question-card.answered-unsure::before { background: var(--unsure); }
+
+  .question-card.answered-agree { border-color: rgba(0,229,255,0.2); }
+  .question-card.answered-disagree { border-color: rgba(255,69,48,0.2); }
+  .question-card.answered-unsure { border-color: rgba(255,214,0,0.2); }
+
+  .q-header {
+    padding: 24px 28px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .q-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+    padding-top: 3px;
+  }
+
+  .q-category {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .q-text {
+    padding: 16px 28px 0 60px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .q-provocation {
+    padding: 10px 28px 0 60px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    opacity: 0.6;
+    font-style: italic;
+  }
+
+  .q-actions {
+    padding: 20px 28px 24px 60px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn-agree { border-color: rgba(0,229,255,0.3); }
+  .btn-agree:hover, .btn-agree.selected {
+    background: rgba(0,229,255,0.08);
+    border-color: var(--agree);
+    color: var(--agree);
+    box-shadow: 0 0 16px rgba(0,229,255,0.15);
+  }
+
+  .btn-disagree { border-color: rgba(255,69,48,0.3); }
+  .btn-disagree:hover, .btn-disagree.selected {
+    background: rgba(255,69,48,0.08);
+    border-color: var(--disagree);
+    color: var(--disagree);
+    box-shadow: 0 0 16px rgba(255,69,48,0.15);
+  }
+
+  .btn-unsure { border-color: rgba(255,214,0,0.3); }
+  .btn-unsure:hover, .btn-unsure.selected {
+    background: rgba(255,214,0,0.08);
+    border-color: var(--unsure);
+    color: var(--unsure);
+    box-shadow: 0 0 16px rgba(255,214,0,0.15);
+  }
+
+  /* TIMELINE VISUAL */
+  .timeline-hint {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent3);
+    margin-left: 60px;
+    margin-bottom: 12px;
+    padding: 4px 10px;
+    border-left: 2px solid var(--accent3);
+    opacity: 0.6;
+  }
+
+  /* CTA */
+  .cta-zone {
+    margin-top: 56px;
+    padding: 40px;
+    border: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .cta-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,69,48,0.06) 0%, transparent 70%);
+  }
+
+  .cta-zone p {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-submit {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.15em;
+    padding: 16px 48px;
+    background: var(--accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .btn-submit:hover {
+    background: #ff6350;
+    box-shadow: 0 0 32px rgba(255,69,48,0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-submit:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .answer-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  /* RESULTS */
+  #results {
+    display: none;
+    animation: fadeIn 0.8s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .results-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 0.95;
+    margin-bottom: 12px;
+  }
+
+  .results-header h2 span {
+    display: block;
+  }
+
+  .profile-name {
+    color: var(--accent);
+    font-size: clamp(48px, 7vw, 96px);
+  }
+
+  .results-summary {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    max-width: 600px;
+    margin-top: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  /* SCORE MATRIX */
+  .score-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin: 32px 0;
+    border: 1px solid var(--border);
+  }
+
+  .score-cell {
+    background: var(--surface);
+    padding: 24px 20px;
+    text-align: center;
+  }
+
+  .score-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+  }
+
+  .score-cell:nth-child(1) .score-value { color: var(--agree); }
+  .score-cell:nth-child(2) .score-value { color: var(--disagree); }
+  .score-cell:nth-child(3) .score-value { color: var(--unsure); }
+
+  .score-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* IMPLICATION CARDS */
+  .implication-grid {
+    display: grid;
+    gap: 2px;
+    margin: 32px 0;
+  }
+
+  .implication-card {
+    background: var(--surface);
+    border-left: 3px solid var(--border);
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .implication-card.critical { border-left-color: var(--accent); }
+  .implication-card.opportunity { border-left-color: var(--agree); }
+  .implication-card.tension { border-left-color: var(--unsure); }
+
+  .impl-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .implication-card.critical .impl-tag { color: var(--accent); }
+  .implication-card.opportunity .impl-tag { color: var(--agree); }
+  .implication-card.tension .impl-tag { color: var(--unsure); }
+
+  .impl-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .impl-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text-dim);
+  }
+
+  /* TIMELINE */
+  .timeline {
+    margin: 40px 0;
+    position: relative;
+  }
+
+  .timeline-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .timeline-track {
+    position: relative;
+    padding-left: 0;
+  }
+
+  .timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .timeline-points {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .tl-point {
+    text-align: center;
+    flex: 1;
+    position: relative;
+    padding-top: 28px;
+  }
+
+  .tl-dot {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+
+  .tl-point.active .tl-dot {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .tl-year {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+
+  .tl-point.active .tl-year { color: var(--accent); }
+
+  .tl-events {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 6px;
+    padding: 0 4px;
+    opacity: 0.6;
+  }
+
+  /* FINAL STATEMENT */
+  .final-statement {
+    margin: 48px 0;
+    padding: 40px;
+    border: 1px solid rgba(255,69,48,0.3);
+    background: rgba(255,69,48,0.03);
+    position: relative;
+  }
+
+  .final-statement::before {
+    content: '"';
+    position: absolute;
+    top: -20px;
+    left: 30px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: var(--accent);
+    opacity: 0.3;
+    line-height: 1;
+  }
+
+  .final-statement p {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .final-statement .highlight {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* SHARE */
+  .share-zone {
+    margin-top: 40px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+    gap: 20px;
+  }
+
+  .share-text h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .share-text p {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+
+  .btn-retake {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 12px 24px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .btn-retake:hover {
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+
+  /* CONTRADICTION ALERT */
+  .contradiction {
+    background: rgba(255,214,0,0.04);
+    border: 1px solid rgba(255,214,0,0.2);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .contradiction-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--unsure);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .contradiction-text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* HIDE ON QUIZ */
+  #quiz { display: block; }
+
+  /* EMAIL GATE MODAL */
+  .gate-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8,10,15,0.92);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .gate-overlay.active { display: flex; }
+
+  .gate-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    max-width: 520px;
+    width: 100%;
+    padding: 48px 40px;
+    position: relative;
+    animation: gateIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes gateIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .gate-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .gate-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .gate-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .gate-box h2 span { color: var(--accent); }
+
+  .gate-box p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+  }
+
+  .gate-box p strong { color: var(--text); font-weight: 500; }
+
+  .gate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gate-input {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .gate-input::placeholder { color: var(--text-muted); }
+  .gate-input:focus { border-color: var(--accent2); }
+
+  .gate-input.error { border-color: var(--accent); }
+
+  .gate-submit {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.15em;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .gate-submit:hover {
+    background: #ff6350;
+    box-shadow: 0 0 24px rgba(255,69,48,0.3);
+  }
+
+  .gate-skip {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-align: center;
+    cursor: pointer;
+    margin-top: 8px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    width: 100%;
+  }
+
+  .gate-skip:hover { opacity: 1; }
+
+  .gate-privacy {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 12px;
+    opacity: 0.4;
+    line-height: 1.6;
+  }
+
+  .gate-error {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    display: none;
+    margin-top: -4px;
+  }
+
+  /* ALL PROFILES COLLAPSIBLE */
+  .all-profiles-section {
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .profiles-toggle {
+    width: 100%;
+    background: var(--surface);
+    border: none;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .profiles-toggle:hover { background: rgba(255,255,255,0.02); }
+
+  .profiles-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .profiles-toggle-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    border: 1px solid rgba(0,229,255,0.2);
+    padding: 4px 10px;
+  }
+
+  .profiles-toggle-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: var(--text);
+  }
+
+  .profiles-toggle-arrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: transform 0.3s;
+  }
+
+  .all-profiles-section.open .profiles-toggle-arrow { transform: rotate(180deg); }
+
+  .profiles-grid {
+    display: none;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .all-profiles-section.open .profiles-grid { display: grid; }
+
+  .profile-card {
+    background: var(--surface);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-card.is-yours {
+    background: rgba(255,69,48,0.04);
+  }
+
+  .profile-card.is-yours::after {
+    content: 'YOUR PROFILE';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 8px;
+    opacity: 0.7;
+  }
+
+  .profile-card-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .profile-card.is-yours .profile-card-name { color: var(--accent); }
+
+  .profile-card-trigger {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--accent3);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.6;
+  }
+
+  .profile-card-desc {
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 600px) {
+    .header { padding: 40px 20px 32px; }
+    .main { padding: 0 16px 80px; }
+    .q-text { padding-left: 20px; }
+    .q-provocation { padding-left: 20px; }
+    .q-actions { padding-left: 20px; }
+    .timeline-hint { margin-left: 20px; }
+    .score-matrix { grid-template-columns: 1fr; }
+    .timeline-points { flex-direction: column; gap: 20px; }
+    .timeline-track::before { display: none; }
+    .gate-box { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- EMAIL GATE MODAL -->
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-box">
+    <div class="gate-tag">// Project Flux — Free Newsletter</div>
+    <h2>Almost there.<br><span>See your profile.</span></h2>
+    <p>
+      Your results are ready. Drop your email to unlock them — and get 
+      <strong>Project Flux</strong>, the weekly newsletter on AI, data, and digital 
+      transformation in the built environment. <strong>Free. No spam. Unsubscribe anytime.</strong>
+    </p>
+    <div class="gate-form">
+      <input type="text" class="gate-input" id="gateName" placeholder="First name" />
+      <input type="email" class="gate-input" id="gateEmail" placeholder="Work email address" />
+      <div class="gate-error" id="gateError">Please enter a valid email address.</div>
+      <button class="gate-submit" onclick="submitGate()">Unlock My Profile →</button>
+    </div>
+    <button class="gate-skip" onclick="skipGate()">Skip — just show me the results</button>
+    <div class="gate-privacy">
+      By subscribing you agree to receive Project Flux emails.<br>
+      Your data is never sold or shared. Powered by Beehiiv.
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-bg"></div>
+  <div class="year-ticker">PROJECT FLUX × AI READINESS SERIES &nbsp;&nbsp;▶&nbsp;&nbsp; 2025<span>_</span></div>
+  <h1>
+    <span class="line1">THE FUTURE</span><br>
+    <span class="line2">SHOCK</span><br>
+    <span class="line3">TEST</span>
+  </h1>
+  <p class="header-sub">
+    A rapid diagnostic for construction & project delivery professionals. 
+    Answer honestly. No wrong answers. The picture at the end speaks for itself.
+  </p>
+  <div class="header-meta">
+    <div class="meta-pill active">18 questions</div>
+    <div class="meta-pill">~5 minutes</div>
+    <div class="meta-pill">Project Delivery Edition</div>
+    <div class="meta-pill">No sign-up required</div>
+  </div>
+</div>
+
+<!-- MAIN QUIZ -->
+<div class="main">
+
+  <!-- INTRO -->
+  <div class="intro" id="quizIntro">
+    <div class="intro-tag">// Before you begin</div>
+    <p>
+      This test isn't about what you <strong>know</strong> about AI. It's about 
+      what you <strong>believe</strong>. Answer based on your gut feeling right now. 
+      At the end, we'll map your beliefs against the economic and technological forces 
+      already in motion — and show you exactly <strong>what that means for your career, 
+      your firm, and your clients.</strong>
+    </p>
+  </div>
+
+  <div id="quiz">
+
+    <!-- SECTION 1 -->
+    <div class="section-header">
+      <div class="section-number">01</div>
+      <div class="section-label">
+        <h2>The Technology Horizon</h2>
+        <p>How fast is this actually moving?</p>
+      </div>
+    </div>
+
+    <div class="question-card" id="q1" data-section="tech">
+      <div class="q-header">
+        <span class="q-num">01</span>
+        <span class="q-category">AGI</span>
+      </div>
+      <p class="q-text">AGI — artificial general intelligence that can outperform humans at most cognitive tasks — will arrive within the next 3 years.</p>
+      <p class="q-provocation">// OpenAI, Google DeepMind, and Anthropic leadership have all made versions of this claim publicly. Sam Altman has said it could arrive before 2030.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q1', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q1', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q1', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q2" data-section="tech">
+      <div class="q-header">
+        <span class="q-num">02</span>
+        <span class="q-category">Capability</span>
+      </div>
+      <p class="q-text">Current AI tools (without AGI) are already capable enough to automate more than half of a graduate engineer's daily workload today.</p>
+      <p class="q-provocation">// McKinsey's 2024 analysis suggests 70% of knowledge worker tasks have significant AI automation potential. The question is adoption speed, not technical capability.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q2', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q2', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q2', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q3" data-section="tech">
+      <div class="q-header">
+        <span class="q-num">03</span>
+        <span class="q-category">Pace</span>
+      </div>
+      <p class="q-text">AI capability is advancing faster than the construction industry's ability to adapt its processes, contracts, and workforce.</p>
+      <p class="q-provocation">// The gap between what AI can do and what firms actually deploy tends to widen before it narrows. Construction has historically been a late adopter.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q3', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q3', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q3', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-header">
+      <div class="section-number">02</div>
+      <div class="section-label">
+        <h2>White Collar Displacement</h2>
+        <p>The professional layer under pressure</p>
+      </div>
+    </div>
+
+    <div class="question-card" id="q4" data-section="white">
+      <div class="q-header">
+        <span class="q-num">04</span>
+        <span class="q-category">Consultancy</span>
+      </div>
+      <p class="q-text">A client will still pay the same fee for a quantity surveyor in 2030 as they do today, even if AI can produce a cost plan in minutes.</p>
+      <p class="q-provocation">// Fee pressure driven by AI won't come from a single moment — it'll come from the client who mentions, quietly, that they ran it through an AI first.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q4', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q4', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q4', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q5" data-section="white">
+      <div class="q-header">
+        <span class="q-num">05</span>
+        <span class="q-category">Graduate Entry</span>
+      </div>
+      <p class="q-text">Firms will hire significantly fewer graduate engineers and project managers in 2030 than they do today because AI will absorb entry-level work.</p>
+      <p class="q-provocation">// Law firms and financial services are already reducing graduate intake. The question is whether construction follows — and what happens to the profession's pipeline if it does.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q5', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q5', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q5', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q6" data-section="white">
+      <div class="q-header">
+        <span class="q-num">06</span>
+        <span class="q-category">Procurement</span>
+      </div>
+      <p class="q-text">AI will fundamentally change how construction contracts are written, tendered, and administered within the next 5 years.</p>
+      <p class="q-provocation">// Smart contracts, AI risk allocation, and automated NEC/JCT clause generation are already in development. The bottleneck is legal acceptance, not technology.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q6', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q6', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q6', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q7" data-section="white">
+      <div class="q-header">
+        <span class="q-num">07</span>
+        <span class="q-category">Professional Value</span>
+      </div>
+      <p class="q-text">Professional judgement, ethical reasoning, and client relationships will protect the core of the engineering and PM profession from AI displacement.</p>
+      <p class="q-provocation">// This is the most common reassurance offered. But clients often can't tell the difference between AI-generated advice and professional advice — and may stop caring.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q7', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q7', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q7', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-header">
+      <div class="section-number">03</div>
+      <div class="section-label">
+        <h2>The Physical Layer</h2>
+        <p>Robots, site work, and the trades</p>
+      </div>
+    </div>
+
+    <div class="question-card" id="q8" data-section="physical">
+      <div class="q-header">
+        <span class="q-num">08</span>
+        <span class="q-category">Humanoids</span>
+      </div>
+      <p class="q-text">Humanoid robots will be capable of replacing general construction labourers on standard building sites within 10 years.</p>
+      <p class="q-provocation">// Figure AI, Tesla Optimus, and Boston Dynamics are all in commercial trials. Construction is one of the primary target sectors due to labour costs and skills shortages.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q8', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q8', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q8', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q9" data-section="physical">
+      <div class="q-header">
+        <span class="q-num">09</span>
+        <span class="q-category">Skilled Trades</span>
+      </div>
+      <p class="q-text">Specialist skilled trades — electricians, plumbers, structural steel fixers — are safer from automation than most white-collar project delivery roles.</p>
+      <p class="q-provocation">// There's an irony here. The dexterity and spatial reasoning required for skilled trades has proven harder to automate than knowledge work. For now.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q9', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q9', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q9', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q10" data-section="physical">
+      <div class="q-header">
+        <span class="q-num">10</span>
+        <span class="q-category">Labour Markets</span>
+      </div>
+      <p class="q-text">A contractor that can deploy humanoid robots will have such a cost advantage over traditional labour that it will structurally reshape construction procurement.</p>
+      <p class="q-provocation">// If a robot costs £8/hr equivalent versus £35/hr for a labourer, and works 24/7 — the entire pricing model of construction contracts changes. Fixed price means something very different.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q10', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q10', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q10', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-header">
+      <div class="section-number">04</div>
+      <div class="section-label">
+        <h2>Client Behaviour & The Market</h2>
+        <p>Who pays for what — and why</p>
+      </div>
+    </div>
+
+    <div class="question-card" id="q11" data-section="market">
+      <div class="q-header">
+        <span class="q-num">11</span>
+        <span class="q-category">Client Intelligence</span>
+      </div>
+      <p class="q-text">Within 5 years, sophisticated clients will have their own in-house AI that can interrogate a consultant's outputs, challenge their assumptions, and flag errors — in real time.</p>
+      <p class="q-provocation">// The power dynamic between client and consultant shifts fundamentally when the client's AI can ask better questions than their own team could before.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q11', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q11', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q11', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q12" data-section="market">
+      <div class="q-header">
+        <span class="q-num">12</span>
+        <span class="q-category">Fee Compression</span>
+      </div>
+      <p class="q-text">AI will compress professional fees in construction consultancy by more than 30% over the next decade.</p>
+      <p class="q-provocation">// Legal, accountancy, and financial services are already seeing AI-driven fee pressure. Construction consultancy typically lags these sectors by 5–8 years.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q12', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q12', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q12', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q13" data-section="market">
+      <div class="q-header">
+        <span class="q-num">13</span>
+        <span class="q-category">Competitive Moat</span>
+      </div>
+      <p class="q-text">The firms that win in 2030 will be those that adopted AI earliest — not those with the best people, longest track record, or strongest brand.</p>
+      <p class="q-provocation">// History suggests first-mover advantage in technology eventually yields to best-execution. But 'eventually' can take a generation.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q13', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q13', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q13', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section-header">
+      <div class="section-number">05</div>
+      <div class="section-label">
+        <h2>You, Personally</h2>
+        <p>The hardest questions</p>
+      </div>
+    </div>
+
+    <div class="question-card" id="q14" data-section="personal">
+      <div class="q-header">
+        <span class="q-num">14</span>
+        <span class="q-category">Self-Assessment</span>
+      </div>
+      <p class="q-text">If AI can do 70% of your current job today, the value you provide is primarily in the 30% that remains — and you are actively developing that 30%.</p>
+      <p class="q-provocation">// Most professionals acknowledge the 70% in the abstract but haven't mapped what their 30% actually is, or built a plan around it.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q14', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q14', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q14', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q15" data-section="personal">
+      <div class="q-header">
+        <span class="q-num">15</span>
+        <span class="q-category">Your Firm</span>
+      </div>
+      <p class="q-text">Your current organisation is moving fast enough with AI to remain competitive against new entrants and AI-native competitors over the next 5 years.</p>
+      <p class="q-provocation">// Most people who work in legacy firms privately believe the answer is no. The question is whether they're doing anything about it.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q15', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q15', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q15', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q16" data-section="personal">
+      <div class="q-header">
+        <span class="q-num">16</span>
+        <span class="q-category">Career Risk</span>
+      </div>
+      <p class="q-text">My personal career trajectory is more at risk from AI than I am currently prepared to admit to colleagues or myself.</p>
+      <p class="q-provocation">// The honest answer here is the most useful one. No one will see your response.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q16', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q16', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q16', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="section-header">
+      <div class="section-number">06</div>
+      <div class="section-label">
+        <h2>Society & Systems</h2>
+        <p>The wider disruption</p>
+      </div>
+    </div>
+
+    <div class="question-card" id="q17" data-section="society">
+      <div class="q-header">
+        <span class="q-num">17</span>
+        <span class="q-category">Regulation</span>
+      </div>
+      <p class="q-text">Governments and professional bodies (RICS, APM, ICE) will move fast enough to regulate AI in construction to prevent significant harm to the public or the profession.</p>
+      <p class="q-provocation">// The EU AI Act took 4 years to pass. Technology typically moves 10x faster than regulation. Professional body guidance usually arrives after the practice is already established.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q17', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q17', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q17', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <div class="question-card" id="q18" data-section="society">
+      <div class="q-header">
+        <span class="q-num">18</span>
+        <span class="q-category">Net Outcome</span>
+      </div>
+      <p class="q-text">On balance, AI and automation will make the built environment industry better — safer sites, higher quality buildings, more efficient delivery — even if it significantly reduces employment.</p>
+      <p class="q-provocation">// The productivity case is strong. The human cost case is also real. Your answer here reveals something important about how you're framing the transition.</p>
+      <div class="q-actions">
+        <button class="btn btn-agree" onclick="answer('q18', 'agree', this)">✓ Agree</button>
+        <button class="btn btn-disagree" onclick="answer('q18', 'disagree', this)">✗ Disagree</button>
+        <button class="btn btn-unsure" onclick="answer('q18', 'unsure', this)">? Unsure</button>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-zone">
+      <p>// Complete all 18 questions to reveal your Future Shock profile</p>
+      <button class="btn-submit" id="submitBtn" disabled onclick="openGate()">
+        Reveal My Profile →
+      </button>
+      <div class="answer-count" id="answerCount">0 of 18 answered</div>
+    </div>
+
+  </div><!-- /quiz -->
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <div class="results-header">
+      <h2>
+        <span>You are a</span>
+        <span class="profile-name" id="profileName">—</span>
+      </h2>
+      <p class="results-summary" id="profileSummary"></p>
+    </div>
+
+    <!-- SCORE MATRIX -->
+    <div class="score-matrix">
+      <div class="score-cell">
+        <div class="score-value" id="agreeCount">0</div>
+        <div class="score-label">Believe it's coming</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-value" id="disagreeCount">0</div>
+        <div class="score-label">Pushing back</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-value" id="unsureCount">0</div>
+        <div class="score-label">Holding uncertainty</div>
+      </div>
+    </div>
+
+    <!-- CONTRADICTIONS -->
+    <div class="contradiction" id="contradictionBox">
+      <div class="contradiction-title">⚡ Internal Tension Detected</div>
+      <div class="contradiction-text" id="contradictionText"></div>
+    </div>
+
+    <!-- IMPLICATIONS -->
+    <div style="margin-top: 8px;">
+      <div class="section-header" style="margin-top: 0;">
+        <div class="section-number" style="-webkit-text-stroke: 1px rgba(255,255,255,0.08);">—</div>
+        <div class="section-label">
+          <h2>What Your Answers Mean</h2>
+          <p>The picture, assembled</p>
+        </div>
+      </div>
+    </div>
+    <div class="implication-grid" id="implicationsGrid"></div>
+
+    <!-- TIMELINE -->
+    <div class="timeline">
+      <div class="timeline-title">THE TRANSFORMATION TIMELINE</div>
+      <div class="timeline-track">
+        <div class="timeline-track-line"></div>
+        <div class="timeline-points">
+          <div class="tl-point active" id="tl2025">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2025</div>
+            <div class="tl-events">AI co-pilots standard<br>Fee pressure begins<br>First redundancies</div>
+          </div>
+          <div class="tl-point" id="tl2027">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2027</div>
+            <div class="tl-events">AGI arrives or misses<br>Graduate intake falls<br>Robot site trials</div>
+          </div>
+          <div class="tl-point" id="tl2030">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2030</div>
+            <div class="tl-events">Market restructure<br>Profession redefines<br>New entrants dominant</div>
+          </div>
+          <div class="tl-point" id="tl2035">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2035</div>
+            <div class="tl-events">Post-transition normal<br>Humanoids deployed<br>Profession transformed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINAL STATEMENT -->
+    <div class="final-statement" id="finalStatement"></div>
+
+    <!-- ALL PROFILES -->
+    <div class="all-profiles-section" id="allProfilesSection">
+      <button class="profiles-toggle" onclick="toggleProfiles()">
+        <div class="profiles-toggle-left">
+          <span class="profiles-toggle-tag">All 7 Profiles</span>
+          <span class="profiles-toggle-title">Which one are you — really?</span>
+        </div>
+        <span class="profiles-toggle-arrow">▼</span>
+      </button>
+      <div class="profiles-grid" id="profilesGrid"></div>
+    </div>
+
+    <!-- SHARE -->
+    <div class="share-zone">
+      <div class="share-text">
+        <h3>Share Your Profile</h3>
+        <p>// Forward to a colleague. Start the conversation.</p>
+      </div>
+      <button class="btn-retake" onclick="retake()">↩ Retake the Test</button>
+    </div>
+
+  </div><!-- /results -->
+
+</div><!-- /main -->
+
+<script>
+// ── ALL PROFILES DATA ──────────────────────────────────────────────
+const ALL_PROFILES = [
+  {
+    name: 'THE ACCELERATIONIST',
+    trigger: 'Triggered by: 13+ Agree answers',
+    desc: 'You believe the disruption is real, rapid, and largely inevitable. You are ahead of most peers in intellectual acceptance — but conviction without adaptation is just anxiety with a name. The professionals who navigate this well won\'t be those who saw it coming. They\'ll be those who changed what they do on Monday morning.'
+  },
+  {
+    name: 'THE SCEPTIC',
+    trigger: 'Triggered by: 13+ Disagree answers',
+    desc: 'You believe the threat is overstated, the technology unproven at scale, and the industry more resilient than the hype suggests. History may vindicate you — late adopters often survive transitions. But the cost of being wrong here is a career, not a bet.'
+  },
+  {
+    name: 'THE REALIST',
+    trigger: 'Triggered by: 8+ Unsure answers',
+    desc: 'You hold genuine uncertainty across most dimensions. This is intellectually honest — most of these questions don\'t have clean answers yet. The risk is that uncertainty becomes a reason to delay action rather than a posture of careful observation.'
+  },
+  {
+    name: 'THE OPTIMISTIC DENIALIST',
+    trigger: 'Triggered by: Believes AI transforms industry but not own career (Q2 Agree + Q16 Disagree)',
+    desc: 'You believe AI will transform the industry — but not your career specifically. This is the most statistically common and most dangerous profile. You are describing a burning building while standing inside it. When clients have AI, they will use it on your outputs. When firms have AI, they will use it on your role.'
+  },
+  {
+    name: 'THE FRUSTRATED INSIDER',
+    trigger: 'Triggered by: High agree score + believes own firm is too slow (Q15 Disagree)',
+    desc: 'You see exactly what\'s coming and know your organisation isn\'t moving fast enough. You have clarity without leverage. The strategic question isn\'t about AI — it\'s about where you do this work next. Both staying and leaving are valid. Only one involves waiting for permission.'
+  },
+  {
+    name: 'THE CRAFT DEFENDER',
+    trigger: 'Triggered by: Disagrees on white-collar risk but agrees trades are safer (Q9 Agree)',
+    desc: 'You believe knowledge work is more resilient than credited, but acknowledge skilled trades are surprisingly durable. Your model has merit — but it may underestimate how quickly client expectations shift once AI-generated advice becomes indistinguishable from professional advice.'
+  },
+  {
+    name: 'THE PRAGMATIC ADOPTER',
+    trigger: 'Triggered by: 8–12 Agree answers, balanced profile',
+    desc: 'You accept the trajectory without panic. The industry transforms, fees compress, and roles shift — but professionals who adapt will find new ground. You are probably right. The question is what "adapting" concretely means for you, in your role, at your firm, starting this quarter.'
+  }
+];
+
+// ── GATE LOGIC ─────────────────────────────────────────────────────
+function openGate() {
+  document.getElementById('gateOverlay').classList.add('active');
+}
+
+function submitGate() {
+  const email = document.getElementById('gateEmail').value.trim();
+  const name = document.getElementById('gateName').value.trim();
+  const emailInput = document.getElementById('gateEmail');
+  const errorEl = document.getElementById('gateError');
+
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!valid) {
+    emailInput.classList.add('error');
+    errorEl.style.display = 'block';
+    return;
+  }
+  emailInput.classList.remove('error');
+  errorEl.style.display = 'none';
+
+  // ── REPLACE THIS URL WITH YOUR BEEHIIV SUBSCRIBE API ENDPOINT ──
+  // Your Beehiiv publication ID is in Settings > Publication > API
+  // Endpoint format: https://api.beehiiv.com/v2/publications/YOUR_PUB_ID/subscriptions
+  // For now we log and proceed — wire up the fetch() call below when ready
+  const BEEHIIV_PUB_ID = 'YOUR_PUBLICATION_ID'; // ← swap this
+  const BEEHIIV_API_KEY = 'YOUR_API_KEY';        // ← swap this (keep server-side in prod)
+
+  /* UNCOMMENT TO GO LIVE — requires CORS proxy or server function:
+  fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUB_ID}/subscriptions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${BEEHIIV_API_KEY}`
+    },
+    body: JSON.stringify({
+      email: email,
+      first_name: name || undefined,
+      reactivate_existing: false,
+      send_welcome_email: true,
+      utm_source: 'future-shock-test',
+      utm_medium: 'quiz',
+      utm_campaign: 'future-shock-2025'
+    })
+  }).catch(err => console.log('Beehiiv subscribe error:', err));
+  */
+
+  console.log('Subscribe:', { name, email }); // remove in prod
+  closeGateAndReveal();
+}
+
+function skipGate() {
+  closeGateAndReveal();
+}
+
+function closeGateAndReveal() {
+  document.getElementById('gateOverlay').classList.remove('active');
+  showResults();
+}
+
+// ── PROFILES TOGGLE ────────────────────────────────────────────────
+function toggleProfiles() {
+  const section = document.getElementById('allProfilesSection');
+  section.classList.toggle('open');
+}
+
+function renderAllProfiles(currentProfile) {
+  const grid = document.getElementById('profilesGrid');
+  grid.innerHTML = ALL_PROFILES.map(p => `
+    <div class="profile-card ${p.name === currentProfile ? 'is-yours' : ''}">
+      <div class="profile-card-trigger">${p.trigger}</div>
+      <div class="profile-card-name">${p.name}</div>
+      <p class="profile-card-desc">${p.desc}</p>
+    </div>
+  `).join('');
+}
+
+// ── MAIN QUIZ LOGIC ────────────────────────────────────────────────
+
+
+function answer(qId, value, btn) {
+  const card = document.getElementById(qId);
+  const btns = card.querySelectorAll('.btn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  card.className = 'question-card answered-' + value;
+  answers[qId] = value;
+
+  const count = Object.keys(answers).length;
+  document.getElementById('answerCount').textContent = count + ' of ' + total + ' answered';
+  document.getElementById('progressBar').style.width = ((count / total) * 100) + '%';
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = count < total;
+}
+
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('quizIntro').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const agree = Object.values(answers).filter(v => v === 'agree').length;
+  const disagree = Object.values(answers).filter(v => v === 'disagree').length;
+  const unsure = Object.values(answers).filter(v => v === 'unsure').length;
+
+  document.getElementById('agreeCount').textContent = agree;
+  document.getElementById('disagreeCount').textContent = disagree;
+  document.getElementById('unsureCount').textContent = unsure;
+
+  // PROFILES
+  let profile, summary;
+
+  if (agree >= 13) {
+    profile = 'THE ACCELERATIONIST';
+    summary = 'You believe the disruption is real, rapid, and largely inevitable. You are ahead of most of your peers in intellectual acceptance — but the question is whether your actions match your beliefs. Conviction without adaptation is just anxiety with a name.';
+  } else if (disagree >= 13) {
+    profile = 'THE SCEPTIC';
+    summary = 'You believe the threat is overstated, the technology is unproven at scale, and the industry is more resilient than the hype suggests. History may vindicate you — late adopters often survive transitions — but the cost of being wrong here is a career, not a bet.';
+  } else if (unsure >= 8) {
+    profile = 'THE REALIST';
+    summary = 'You hold genuine uncertainty across most dimensions. This is intellectually honest — most of these questions don\'t have clean answers yet. The risk is that uncertainty becomes a reason to delay action rather than a posture of careful observation.';
+  } else if (agree >= 10 && answers.q16 === 'disagree') {
+    profile = 'THE OPTIMISTIC DENIALIST';
+    summary = 'You believe AI will transform the industry — but not your career specifically. This is the most statistically common and most dangerous profile. You are describing a burning building while standing inside it.';
+  } else if (agree >= 9 && answers.q15 === 'disagree') {
+    profile = 'THE FRUSTRATED INSIDER';
+    summary = 'You see exactly what\'s coming and you know your organisation isn\'t moving fast enough. You have clarity without leverage — which means the most urgent question isn\'t about AI. It\'s about where you do this work next.';
+  } else if (disagree >= 7 && answers.q9 === 'agree') {
+    profile = 'THE CRAFT DEFENDER';
+    summary = 'You believe knowledge work is more resilient than it\'s given credit for, but you acknowledge the physical trades are surprisingly durable. Your model has merit — but it may underestimate how quickly client expectations shift.';
+  } else if (agree >= 8) {
+    profile = 'THE PRAGMATIC ADOPTER';
+    summary = 'You accept the trajectory without panic. You believe the industry transforms, fees compress, and roles shift — but that professionals who adapt will find new ground. You are probably right. The question is what "adapting" concretely means for you.';
+  } else {
+    profile = 'THE MEASURED OBSERVER';
+    summary = 'Your responses suggest a calibrated view: significant transformation is coming, but timelines are uncertain and the details matter. You are unlikely to be caught entirely off guard, but you may be underestimating the speed of the economic pressure even as the technology lags expectations.';
+  }
+
+  document.getElementById('profileName').textContent = profile;
+  document.getElementById('profileSummary').textContent = summary;
+  renderAllProfiles(profile);
+
+  // CONTRADICTIONS
+  let contradictions = [];
+  if (answers.q2 === 'agree' && answers.q4 === 'agree') {
+    contradictions.push('You believe AI can already do most of a graduate engineer\'s work (Q2) — but also that clients will still pay the same fees in 2030 (Q4). These beliefs are hard to hold simultaneously.');
+  }
+  if (answers.q1 === 'agree' && answers.q7 === 'agree') {
+    contradictions.push('You believe AGI arrives in 3 years (Q1) but that professional judgement will protect the profession (Q7). At AGI-level capability, the protection that professional judgement offers narrows dramatically.');
+  }
+  if (answers.q3 === 'agree' && answers.q15 === 'agree') {
+    contradictions.push('You believe the industry can\'t adapt fast enough (Q3) — but that your specific firm is moving fast enough (Q15). Either your firm is genuinely exceptional, or one of these answers needs revisiting.');
+  }
+  if (answers.q5 === 'agree' && answers.q17 === 'agree') {
+    contradictions.push('You believe firms will hire far fewer graduates (Q5) but that professional bodies will regulate effectively (Q17). Rapid employment displacement typically precedes regulatory response, not the reverse.');
+  }
+  if (answers.q8 === 'agree' && answers.q9 === 'agree') {
+    contradictions.push('You believe humanoids will replace general labourers (Q8) and that skilled trades are safer than white-collar roles (Q9). Both can be true — but the window for skilled-trade safety may be shorter than assumed once bipedal dexterity matures.');
+  }
+
+  if (contradictions.length > 0) {
+    document.getElementById('contradictionBox').style.display = 'block';
+    document.getElementById('contradictionText').innerHTML = contradictions.map(c => '→ ' + c).join('<br><br>');
+  }
+
+  // IMPLICATIONS
+  const implications = [];
+
+  if (answers.q2 === 'agree' || answers.q6 === 'agree') {
+    implications.push({
+      type: 'critical',
+      tag: 'Fee Architecture',
+      title: 'The Billing Model is Broken',
+      text: 'If AI can produce in minutes what took a team weeks, the case for time-based billing collapses. Firms that don\'t shift to value-based, outcome-based, or AI-augmented delivery models will face existential fee compression — not as a future threat, but as a 2027 problem.'
+    });
+  }
+
+  if (answers.q5 === 'agree' || answers.q4 === 'disagree') {
+    implications.push({
+      type: 'critical',
+      tag: 'Workforce Pipeline',
+      title: 'Who Trains the Next Generation?',
+      text: 'If graduate intake falls because AI absorbs entry-level work, the profession loses its training pipeline. Senior professionals learned their craft through years of unglamorous work that AI now does. The new entrant either learns alongside AI — or never learns at all. This is not a solved problem.'
+    });
+  }
+
+  if (answers.q8 === 'agree' || answers.q10 === 'agree') {
+    implications.push({
+      type: 'critical',
+      tag: 'Contract Structure',
+      title: 'Fixed Price Means Nothing When Labour Costs Zero',
+      text: 'The entire risk-transfer architecture of construction contracts is built on labour costs being real and variable. If a contractor can switch to humanoid labour mid-project, the cost floor disappears. Contractors who acquire robot capability first will have pricing power that rewrites every competitive tender.'
+    });
+  }
+
+  if (answers.q11 === 'agree' || answers.q12 === 'agree') {
+    implications.push({
+      type: 'tension',
+      tag: 'Power Dynamics',
+      title: 'The Client Becomes the Smartest Person in the Room',
+      text: 'For a century, consultants held the information advantage. AI-equipped clients will close that gap in years. The consultant\'s role shifts from expert to guide, validator, and liability absorber. Those who haven\'t repositioned their value proposition before this happens will find themselves on the wrong side of every fee negotiation.'
+    });
+  }
+
+  if (answers.q13 === 'agree' || answers.q15 === 'disagree') {
+    implications.push({
+      type: 'tension',
+      tag: 'Market Structure',
+      title: 'AI-Native Firms Don\'t Carry Legacy Costs',
+      text: 'A new consultancy built in 2025 with AI-first processes, no legacy IT, no bloated middle management layer, and no culture of billable hours can undercut established firms at margin while delivering equivalent or better outputs. The new entrant threat in construction consultancy is not theoretical. It is arriving.'
+    });
+  }
+
+  if (answers.q9 === 'agree') {
+    implications.push({
+      type: 'opportunity',
+      tag: 'Trade Skills',
+      title: 'The Trades Premium Window is Real — But Finite',
+      text: 'Electricians, plumbers, and specialist installers currently have a dexterity and adaptability advantage over robots. This creates a 5–10 year window where trade skills command premium rates. The professionals who understand this are counselling their children to get trade qualifications before degrees — not instead of them.'
+    });
+  }
+
+  if (answers.q14 === 'agree') {
+    implications.push({
+      type: 'opportunity',
+      tag: 'Personal Strategy',
+      title: 'You\'re One of the Few Building the 30%',
+      text: 'Most professionals know AI is eroding their role but haven\'t defined what they\'re building toward. If you genuinely know what your irreplaceable 30% is — and are actively developing it — you are ahead of the majority of the profession. The key question: is your 30% client-facing, judgment-intensive, and relationship-dependent? Those are the defensible attributes.'
+    });
+  }
+
+  if (answers.q18 === 'agree') {
+    implications.push({
+      type: 'opportunity',
+      tag: 'Industry Outcome',
+      title: 'Better Buildings Are a Genuine Possibility',
+      text: 'Optimism about AI\'s impact on project outcomes is historically warranted. Technology transitions in construction — from CAD to BIM to drone surveying — have improved quality and safety. AI has the potential to compress programme, reduce defects, and improve safety planning. The net outcome question is real. The transition cost is also real.'
+    });
+  }
+
+  if (answers.q17 === 'disagree') {
+    implications.push({
+      type: 'tension',
+      tag: 'Governance Gap',
+      title: 'The Regulation Vacuum Will Be Filled — By Someone',
+      text: 'If professional bodies and governments can\'t regulate fast enough, the effective standards will be set by whoever deploys AI at scale first. In the absence of RICS guidance on AI-generated cost plans, the de facto standard becomes whatever Gleeds, Turner & Townsend, or an AI-native startup decides to publish. Standards vacuums don\'t stay empty.'
+    });
+  }
+
+  // Always add a sector-wide implication
+  implications.push({
+    type: 'critical',
+    tag: 'The Undeniable Picture',
+    title: 'Construction Is Not a Special Case',
+    text: 'Every sector that has felt the full force of digital transformation — financial services, legal, media, retail — has had professionals who believed their domain was fundamentally different. It wasn\'t. The specific shape of construction\'s transformation is unknown. That transformation is happening is not.'
+  });
+
+  const grid = document.getElementById('implicationsGrid');
+  grid.innerHTML = implications.slice(0, 6).map(imp => `
+    <div class="implication-card ${imp.type}">
+      <div class="impl-tag">${imp.tag}</div>
+      <div class="impl-title">${imp.title}</div>
+      <p class="impl-text">${imp.text}</p>
+    </div>
+  `).join('');
+
+  // FINAL STATEMENT
+  const statements = {
+    'THE ACCELERATIONIST': `You arrived at this test already believing. The challenge for you isn't intellectual — it's <span class="highlight">executional</span>. Belief without changed behaviour is the most comfortable form of avoidance. The professionals who navigate this well won't be the ones who saw it coming. They'll be the ones who <span class="highlight">changed what they do on Monday morning.</span>`,
+    'THE SCEPTIC': `History is on your side, partially. Automation timelines are consistently overpredicted. But the direction of travel is not in doubt. Your risk is not that you're wrong about speed. It's that you're using scepticism about speed as a reason to <span class="highlight">not prepare at all.</span> The window between "it's coming" and "it's here" is shorter than it appears in the rearview.`,
+    'THE REALIST': `Uncertainty is the honest position. But uncertainty can become a permanent resting state that <span class="highlight">substitutes for decision-making.</span> At some point, you have to make a bet on when and how, and position yourself accordingly. The professionals who thrive in transitions aren't the most certain ones — they're the ones who prepared for <span class="highlight">multiple futures simultaneously.</span>`,
+    'THE OPTIMISTIC DENIALIST': `This is the most important profile to name. You described a transformation that <span class="highlight">happens to everyone else.</span> The data doesn't support that. When clients have AI, they will use it on your outputs. When firms have AI, they will use it on your role. The question isn't whether this affects you. It's whether you're <span class="highlight">one of the people shaping how, or one of the people it happens to.</span>`,
+    'THE FRUSTRATED INSIDER': `You are in the right conversation. You are possibly in the wrong room. The frustration of seeing clearly while being embedded in slow-moving institutions is real. The strategic question is whether you can change the institution <span class="highlight">faster than the market changes around it</span> — or whether the energy is better spent building something new. Both are valid. Only one of them involves <span class="highlight">waiting for permission.</span>`,
+    default: `There is a version of the next ten years in which construction emerges from this transition <span class="highlight">safer, faster, and better.</span> There is another version where the profession fragments, fees collapse, and the middle layer of project delivery disappears. Both futures are plausible. Which one arrives depends significantly on whether the people currently inside the industry <span class="highlight">actively shape the transition — or passively experience it.</span> You just spent five minutes thinking about which side of that you're on. <span class="highlight">That's not nothing.</span>`
+  };
+
+  const statement = statements[profile] || statements.default;
+  document.getElementById('finalStatement').innerHTML = `<p>${statement}</p>`;
+
+  // Animate timeline
+  setTimeout(() => {
+    document.getElementById('tl2027').classList.add('active');
+    setTimeout(() => {
+      document.getElementById('tl2030').classList.add('active');
+      setTimeout(() => {
+        document.getElementById('tl2035').classList.add('active');
+      }, 400);
+    }, 400);
+  }, 600);
+}
+
+function retake() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('quizIntro').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('answerCount').textContent = '0 of 18 answered';
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('gateOverlay').classList.remove('active');
+  document.getElementById('allProfilesSection').classList.remove('open');
+  document.querySelectorAll('.question-card').forEach(c => {
+    c.className = 'question-card';
+    c.querySelectorAll('.btn').forEach(b => b.classList.remove('selected'));
+  });
+  document.getElementById('contradictionBox').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
