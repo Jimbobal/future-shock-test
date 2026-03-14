@@ -1022,23 +1022,25 @@
 <div class="gate-overlay" id="gateOverlay">
   <div class="gate-box">
     <img src="flux-icon.png" alt="Project Flux" style="height:48px; margin-bottom:12px; border-radius:10px;">
-    <div class="gate-tag">// Project Flux — Free Newsletter</div>
+    <div class="gate-tag">// Project Flux</div>
     <h2>Almost there.<br><span>See your profile.</span></h2>
     <p>
-      Your results are ready. Drop your email to unlock them — and get 
-      <strong>Project Flux</strong>, the weekly newsletter on AI, data, and digital 
-      transformation in the built environment. <strong>Free. No spam. Unsubscribe anytime.</strong>
+      Your results are ready. Enter your email to unlock them.
+      Your answers are stored anonymously for research purposes only.
     </p>
     <div class="gate-form">
       <input type="text" class="gate-input" id="gateName" placeholder="First name" />
       <input type="email" class="gate-input" id="gateEmail" placeholder="Work email address" />
       <div class="gate-error" id="gateError">Please enter a valid email address.</div>
+      <label style="display:flex; align-items:flex-start; gap:10px; margin:12px 0 16px; cursor:pointer; text-align:left; font-size:0.85rem; color:#999; line-height:1.4;">
+        <input type="checkbox" id="gateNewsletter" style="margin-top:3px; accent-color:#ff4530; flex-shrink:0; width:16px; height:16px;">
+        <span>Also subscribe me to <strong style="color:#ccc;">Project Flux</strong>, the weekly newsletter on AI, data, and digital transformation in the built environment. Free. No spam. Unsubscribe anytime.</span>
+      </label>
       <button class="gate-submit" onclick="submitGate()">Unlock My Profile →</button>
     </div>
-    <!-- email required to see results -->
     <div class="gate-privacy">
-      By subscribing you agree to receive Project Flux emails.<br>
-      Your data is never sold or shared. Powered by Beehiiv.
+      Your data is stored securely and never sold or shared.<br>
+      By continuing you agree to our <a href="https://www.projectflux.ai/project-flux-privacy-policy" target="_blank" rel="noopener" style="color:#ff4530; text-decoration:underline;">Privacy Policy</a>.
     </div>
   </div>
 </div>
@@ -1580,13 +1582,14 @@ function submitGate() {
   emailInput.classList.remove('error');
   errorEl.style.display = 'none';
 
-  // ── Send quiz data to Notion + Beehiiv via Cloudflare Worker ──
+  // ── Send quiz data to Notion (always) + Beehiiv (only if opted in) ──
   const { profile, agree, disagree, unsure } = getProfile();
+  const subscribe = document.getElementById('gateNewsletter').checked;
   const WORKER_URL = 'https://quiz-relay.jamesgarner1976.workers.dev';
   fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, answers, profile, agree, disagree, unsure })
+    body: JSON.stringify({ name, email, answers, profile, agree, disagree, unsure, subscribe })
   }).catch(() => {});
 
   closeGateAndReveal();
